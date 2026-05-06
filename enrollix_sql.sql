@@ -1,6 +1,5 @@
 USE ENROLLIX;
 GO
-
 -- ============================================================
 --  SECTION 1: TABLES
 -- ============================================================
@@ -188,75 +187,362 @@ INSERT INTO Students VALUES
 (1,'Aqsa','Khan','aqsa@uni.com','CS',3,18,1,'student123'),
 (2,'Sara','Ahmed','sara@uni.com','CS',4,18,1,'student123'),
 (3,'Usman','Raza','usman@uni.com','SE',2,15,0,'student123'),
-(4,'Hina','Malik','hina@uni.com','IT',5,21,1,'student123');
+(4,'Hina','Malik','hina@uni.com','IT',5,21,1,'student123'),
+(5,'Bilal','Hussain','bilal@uni.com','CS',2,18,0,'student123'),
+(6,'Ayesha','Siddiqui','ayesha@uni.com','SE',6,21,1,'student123'),
+(7,'Hamza','Ali','hamza@uni.com','IT',1,15,0,'student123'),
+(8,'Fatima','Zafar','fatima@uni.com','CS',7,21,1,'student123');
 
 INSERT INTO Instructors VALUES
 (1,'Dr. Aslam','CS','aslam@uni.com',2,1,'teacher123'),
 (2,'Dr. Nida','CS','nida@uni.com',3,2,'teacher123'),
-(3,'Dr. Ahmer','SE','ahmer@uni.com',2,1,'teacher123');
+(3,'Dr. Ahmer','SE','ahmer@uni.com',2,1,'teacher123'),
+(4,'Dr. Saeed','IT','saeed@uni.com',2,1,'teacher123'),
+(5,'Dr. Mariam','SE','mariam@uni.com',3,2,'teacher123');
 
+-- Semester 1
 INSERT INTO Courses VALUES
-(101,'CS101','Programming Fundamentals',3,'CS'),
-(102,'CS201','Data Structures',3,'CS'),
-(103,'SE101','Software Engineering',3,'SE'),
-(104,'IT101','Database Systems',3,'IT'),
-(105,'CS301','Algorithms',3,'CS'),
-(106,'CS401','Machine Learning',3,'CS');
+(101, 'NS1001', 'Applied Physics',                                   3, 'NS'),
+(102, 'MT1003', 'Calculus and Analytical Geometry',                  3, 'Math'),
+(103, 'SS1012', 'Functional English',                                2, 'SS'),
+(104, 'SL1012', 'Functional English - Lab',                          1, 'SS'),
+(105, 'SS1013', 'Ideology and Constitution of Pakistan',             2, 'SS'),
+(106, 'CL1000', 'Introduction to ICT',                              1, 'CS'),
+(107, 'CS1002', 'Programming Fundamentals',                          3, 'CS'),
+(108, 'CL1002', 'Programming Fundamentals - Lab',                    1, 'CS'),
+(109, 'SS1019', 'Understanding Sirat-Un-Nabi (PBUH)',                1, 'SS'),
+-- Semester 2
+(201, 'SS2043', 'Civics and Community Engagement',                   2, 'SS'),
+(202, 'EE1005', 'Digital Logic Design',                              3, 'EE'),
+(203, 'EL1005', 'Digital Logic Design - Lab',                        1, 'EE'),
+(204, 'SS1014', 'Expository Writing',                                2, 'SS'),
+(205, 'SL1014', 'Expository Writing - Lab',                          1, 'SS'),
+(206, 'SS1007', 'Islamic Studies/Ethics',                            2, 'SS'),
+(207, 'MT1008', 'Multivariable Calculus',                            3, 'Math'),
+(208, 'CS1004', 'Object Oriented Programming',                       3, 'CS'),
+(209, 'CL1004', 'Object Oriented Programming - Lab',                 1, 'CS'),
+(210, 'SS1018', 'Understanding Holy Quran',                          1, 'SS'),
+-- Semester 3
+(301, 'EE2003', 'Computer Organization and Assembly Language',       3, 'EE'),
+(302, 'EL2003', 'Computer Organization and Assembly Language - Lab', 1, 'EE'),
+(303, 'CS2001', 'Data Structures',                                   3, 'CS'),
+(304, 'CL2001', 'Data Structures - Lab',                             1, 'CS'),
+(305, 'CS1005', 'Discrete Structures',                               3, 'CS'),
+(306, 'MT1004', 'Linear Algebra',                                    3, 'Math'),
+(307, 'MG1009', 'Fundamentals of Management',                        2, 'Mgmt'),
+(308, 'CS3005', 'Theory of Automata',                                3, 'CS'),
+-- Semester 4 (current — Spring 2026)
+(401, 'AI2002', 'Artificial Intelligence',                           3, 'CS'),
+(402, 'AL2002', 'Artificial Intelligence - Lab',                     1, 'CS'),
+(403, 'CS2005', 'Database Systems',                                  3, 'CS'),
+(404, 'CL2005', 'Database Systems - Lab',                            1, 'CS'),
+(405, 'CS2006', 'Operating Systems',                                 3, 'CS'),
+(406, 'CL2006', 'Operating Systems - Lab',                           1, 'CS'),
+(407, 'SS1015', 'Pakistan Studies',                                  2, 'SS'),
+(408, 'MT2005', 'Probability and Statistics',                        3, 'Math'),
+(409, 'CS3004', 'Software Design and Analysis',                      3, 'CS'),
+-- Semester 5+
+(501, 'CS3014', 'Applied Human Computer Interaction',                3, 'CS'),
+(502, 'EE3009', 'Computer Architecture',                             3, 'EE'),
+(503, 'CS3001', 'Computer Networks',                                 3, 'CS'),
+(504, 'CL3001', 'Computer Networks - Lab',                           1, 'CS'),
+(505, 'CS2009', 'Design and Analysis of Algorithms',                 3, 'CS'),
+(601, 'CS4087', 'Advanced DBMS',                                     3, 'CS'),
+(602, 'CS4031', 'Compiler Construction',                             3, 'CS');
+GO
 
 INSERT INTO Course_Prerequisites VALUES
-(102,101),(105,102),(106,105);
+(108, 107),  -- PF Lab needs PF
+(208, 107),  -- OOP needs PF
+(209, 208),  -- OOP Lab needs OOP
+(303, 208),  -- DS needs OOP
+(304, 303),  -- DS Lab needs DS
+(403, 303),  -- DB Systems needs DS
+(401, 208),  -- AI needs OOP
+(305, 107),  -- Discrete needs PF
+(308, 305),  -- Automata needs Discrete
+(207, 102),  -- Multivariable needs Calculus
+(306, 207),  -- Linear Algebra needs Multivariable
+(408, 306),  -- Prob & Stats needs Linear Algebra
+(301, 202),  -- COAL needs DLD
+(302, 301),  -- COAL Lab needs COAL
+(502, 301),  -- Computer Arch needs COAL
+(203, 202),  -- DLD Lab needs DLD
+(404, 403),  -- DB Lab needs DB Systems
+(406, 405),  -- OS Lab needs OS
+(402, 401),  -- AI Lab needs AI
+(409, 303),  -- SDA needs DS
+(601, 403),  -- Advanced DBMS needs DB
+(602, 308);  -- Compiler needs Automata
+GO
 
 INSERT INTO Semesters (semester_name,year,enrollment_start,enrollment_deadline,drop_deadline,exam_start,is_active) VALUES
-('Fall',2025,'2025-08-01','2025-09-15','2025-10-15','2025-12-01',1);
+('Fall',   2024, '2024-08-01', '2024-09-10', '2024-10-10', '2024-12-01', 0),
+('Spring', 2025, '2025-01-15', '2025-02-15', '2025-03-20', '2025-05-15', 0),
+('Fall',   2025, '2025-08-01', '2025-09-15', '2025-10-15', '2025-12-01', 0),
+('Spring', 2026, '2026-01-20', '2026-02-28', '2026-03-25', '2026-05-20', 1);
+GO
 
+-- Fall 2024 (Semester 1)
 INSERT INTO Sections VALUES
-(1,101,1,'Fall',2025,3,1),
-(2,102,2,'Fall',2025,2,2),
-(3,103,3,'Fall',2025,2,0),
-(4,104,2,'Fall',2025,3,3),
-(5,105,1,'Fall',2025,2,2),
-(6,106,2,'Fall',2025,2,2);
+(11, 101, 1, 'Fall', 2024, 35, 30),
+(12, 102, 4, 'Fall', 2024, 35, 28),
+(13, 103, 5, 'Fall', 2024, 40, 36),
+(14, 104, 5, 'Fall', 2024, 40, 36),
+(15, 105, 5, 'Fall', 2024, 40, 35),
+(16, 106, 1, 'Fall', 2024, 40, 35),
+(17, 107, 1, 'Fall', 2024, 35, 28),
+(18, 108, 1, 'Fall', 2024, 35, 28),
+(19, 109, 5, 'Fall', 2024, 40, 38),
+-- Spring 2025 (Semester 2)
+(21, 201, 5, 'Spring', 2025, 35, 30),
+(22, 202, 3, 'Spring', 2025, 35, 28),
+(23, 203, 3, 'Spring', 2025, 35, 28),
+(24, 204, 5, 'Spring', 2025, 40, 35),
+(25, 205, 5, 'Spring', 2025, 40, 35),
+(26, 206, 5, 'Spring', 2025, 40, 36),
+(27, 207, 4, 'Spring', 2025, 35, 28),
+(28, 208, 2, 'Spring', 2025, 35, 26),
+(29, 209, 2, 'Spring', 2025, 35, 26),
+
+-- Fall 2025 (Semester 3)
+(31, 301, 3, 'Fall', 2025, 35, 27),
+(32, 302, 3, 'Fall', 2025, 35, 27),
+(33, 303, 2, 'Fall', 2025, 35, 25),
+(34, 304, 2, 'Fall', 2025, 35, 25),
+(35, 305, 1, 'Fall', 2025, 35, 28),
+(36, 306, 4, 'Fall', 2025, 35, 27),
+(37, 307, 5, 'Fall', 2025, 40, 35),
+(38, 308, 1, 'Fall', 2025, 35, 26),
+-- Spring 2026 (Semester 4 — CURRENT)
+(41, 401, 2, 'Spring', 2026, 35, 22),
+(42, 402, 2, 'Spring', 2026, 35, 22),
+(43, 403, 1, 'Spring', 2026, 35, 18),
+(44, 404, 1, 'Spring', 2026, 35, 18),
+(45, 405, 3, 'Spring', 2026, 35, 20),
+(46, 406, 3, 'Spring', 2026, 35, 20),
+(47, 407, 5, 'Spring', 2026, 40, 34),
+(48, 408, 4, 'Spring', 2026, 35, 22),
+(49, 409, 2, 'Spring', 2026, 35, 20);
+GO
 
 INSERT INTO Completed_Courses VALUES
-(1,101,'A',4.0,3,'Spring',2025),
-(2,101,'B',3.0,3,'Spring',2025),
-(3,101,'C',2.0,3,'Spring',2025),
-(4,101,'A',4.0,3,'Spring',2024);
+(1, 106, 'A', 3.7, 1, 'Fall', 2024),   -- CL1000 ICT
+(1, 108, 'C',  2.0, 1, 'Fall', 2024),   -- CL1002 PF Lab
+(1, 107, 'B', 2.7, 3, 'Fall', 2024),   -- CS1002 PF
+(1, 102, 'B', 2.7, 3, 'Fall', 2024),   -- MT1003 Calculus
+(1, 101, 'B', 3.3, 3, 'Fall', 2024),   -- NS1001 Applied Physics
+(1, 104, 'A', 3.7, 1, 'Fall', 2024),   -- SL1012 FE Lab
+(1, 103, 'A',  4.0, 2, 'Fall', 2024),   -- SS1012 Functional English
+(1, 105, 'B',  3.0, 2, 'Fall', 2024);  -- SS1013 Ideology
 
+ INSERT INTO Completed_Courses VALUES
+-- SPRING 2025 (Semester 2)
+(1, 209, 'D', 1.3, 1, 'Spring', 2025), -- CL1004 OOP Lab  (NOTE: D+ not in check constraint, use 'D' for safety)
+(1, 208, 'C', 1.7, 3, 'Spring', 2025), -- CS1004 OOP
+(1, 202, 'B', 3.3, 3, 'Spring', 2025), -- EE1005 DLD
+(1, 203, 'B',  3.0, 1, 'Spring', 2025), -- EL1005 DLD Lab
+(1, 207, 'C',  2.0, 3, 'Spring', 2025), -- MT1008 Multivariable Calc
+(1, 205, 'A', 3.7, 1, 'Spring', 2025), -- SL1014 EW Lab
+(1, 206, 'B',  3.0, 2, 'Spring', 2025), -- SS1007 Islamic Studies
+(1, 204, 'A',  4.0, 2, 'Spring', 2025), -- SS1014 Expository Writing
+(1, 201, 'A', 3.7, 2, 'Spring', 2025); -- SS2043 Civics
+ INSERT INTO Completed_Courses VALUES
+-- FALL 2025 (Semester 3)
+(1, 304, 'A', 3.7, 1, 'Fall', 2025),   -- CL2001 DS Lab
+(1, 305, 'B', 3.3, 3, 'Fall', 2025),   -- CS1005 Discrete Structures
+(1, 303, 'B', 2.7, 3, 'Fall', 2025),   -- CS2001 Data Structures
+(1, 308, 'A',  4.0, 3, 'Fall', 2025),   -- CS3005 Theory of Automata
+(1, 301, 'C', 2.3, 3, 'Fall', 2025),   -- EE2003 COAL
+(1, 302, 'C', 1.7, 1, 'Fall', 2025),   -- EL2003 COAL Lab
+(1, 307, 'B',  3.0, 2, 'Fall', 2025),   -- MG1009 Fund. Management
+(1, 306, 'A',  4.0, 3, 'Fall', 2025);   -- MT1004 Linear Algebra
+GO
+INSERT INTO Completed_Courses VALUES
+-- Fall 2024
+(2, 106, 'B', 3.3, 1, 'Fall', 2024),
+(2, 108, 'B',  3.0, 1, 'Fall', 2024),
+(2, 107, 'A', 3.7, 3, 'Fall', 2024),
+(2, 102, 'B',  3.0, 3, 'Fall', 2024),
+(2, 101, 'A',  4.0, 3, 'Fall', 2024),
+(2, 104, 'B', 3.3, 1, 'Fall', 2024),
+(2, 103, 'A', 3.7, 2, 'Fall', 2024),
+(2, 105, 'B',  3.0, 2, 'Fall', 2024),
+-- Spring 2025
+(2, 209, 'C', 2.3, 1, 'Spring', 2025),
+(2, 208, 'B', 2.7, 3, 'Spring', 2025),
+(2, 202, 'A', 3.7, 3, 'Spring', 2025),
+(2, 203, 'A', 3.7, 1, 'Spring', 2025),
+(2, 207, 'B',  3.0, 3, 'Spring', 2025),
+(2, 205, 'B', 3.3, 1, 'Spring', 2025),
+(2, 206, 'A',  4.0, 2, 'Spring', 2025),
+(2, 204, 'B', 3.3, 2, 'Spring', 2025),
+(2, 201, 'A',  4.0, 2, 'Spring', 2025);
+GO
+
+INSERT INTO Completed_Courses VALUES
+(3, 106, 'C',  2.0, 1, 'Fall', 2024),
+(3, 108, 'C-', 1.7, 1, 'Fall', 2024),
+(3, 107, 'C+', 2.3, 3, 'Fall', 2024),
+(3, 102, 'B-', 2.7, 3, 'Fall', 2024),
+(3, 101, 'C+', 2.3, 3, 'Fall', 2024),
+(3, 104, 'B',  3.0, 1, 'Fall', 2024),
+(3, 103, 'B+', 3.3, 2, 'Fall', 2024),
+(3, 105, 'C',  2.0, 2, 'Fall', 2024),
+(3, 209, 'B',  3.0, 1, 'Spring', 2025),
+(3, 208, 'B-', 2.7, 3, 'Spring', 2025),
+(3, 202, 'B',  3.0, 3, 'Spring', 2025),
+(3, 203, 'B+', 3.3, 1, 'Spring', 2025),
+(3, 207, 'B-', 2.7, 3, 'Spring', 2025),
+(3, 205, 'A-', 3.7, 1, 'Spring', 2025),
+(3, 206, 'B+', 3.3, 2, 'Spring', 2025),
+(3, 204, 'B',  3.0, 2, 'Spring', 2025),
+(3, 201, 'B-', 2.7, 2, 'Spring', 2025);
+GO
+DELETE FROM Enrollments;
+DELETE FROM Waiting_List;
+DELETE FROM Swap_Requests;
 INSERT INTO Enrollments VALUES
 (1,1,2,'2025-09-01','Registered'),
-(2,2,1,'2025-09-01','Registered');
+(2,2,1,'2025-09-01','Registered'),
+(3,5,7,'2026-01-20','Registered'),
+(4,6,8,'2026-01-22','Registered'),
+(5,7,9,'2026-01-25','Registered');
+-- ─────────────────────────────────────────────────────────────
+--  ENROLLMENTS (Spring 2026 — current semester)
+-- ─────────────────────────────────────────────────────────────
+-- Aqsa (student 1) — Semester 4 courses
+INSERT INTO Enrollments VALUES
+(1,  1, 41, '2026-01-25', 'Registered'),  -- AI
+(2,  1, 42, '2026-01-25', 'Registered'),  -- AI Lab
+(3,  1, 43, '2026-01-25', 'Registered'),  -- Database Systems
+(4,  1, 44, '2026-01-25', 'Registered'),  -- DB Lab
+(5,  1, 45, '2026-01-25', 'Registered'),  -- Operating Systems
+(6,  1, 46, '2026-01-25', 'Registered'),  -- OS Lab
+(7,  1, 47, '2026-01-25', 'Registered'),  -- Pakistan Studies
+(8,  1, 48, '2026-01-25', 'Registered'),  -- Prob & Stats
+(9,  1, 49, '2026-01-25', 'Registered'),  -- SDA
+ 
+-- Sara (student 2) — still in Semester 3
+(10, 2, 31, '2025-09-01', 'Registered'),
+(11, 2, 32, '2025-09-01', 'Registered'),
+(12, 2, 33, '2025-09-01', 'Registered'),
+(13, 2, 34, '2025-09-01', 'Registered'),
+(14, 2, 35, '2025-09-01', 'Registered'),
+(15, 2, 36, '2025-09-01', 'Registered'),
+(16, 2, 38, '2025-09-01', 'Registered'),
+ 
+-- Usman (student 3) — Semester 4
+(20, 3, 41, '2026-01-25', 'Registered'),
+(21, 3, 42, '2026-01-25', 'Registered'),
+(22, 3, 43, '2026-01-25', 'Registered'),
+(23, 3, 45, '2026-01-25', 'Registered'),
+(24, 3, 47, '2026-01-25', 'Registered'),
+(25, 3, 48, '2026-01-25', 'Registered');
+GO
 
 INSERT INTO Waiting_List VALUES
-(1,3,3,'2025-09-02',1),
-(2,4,3,'2025-09-02',2);
+(1, 4, 43, '2026-01-26', 1),  -- Hina waiting for DB Systems
+(2, 4, 41, '2026-01-26', 1);  -- Hina waiting for AI
+GO
 
+
+-- Sample Swap Requests
 INSERT INTO Swap_Requests VALUES
-(1,1,2,102,'Pending','2025-09-03');
+(1, 1, 2, 102, 'Pending',  '2025-09-03'),  -- Aqsa and Sara want to swap Data Structures
+(2, 3, 4, 103, 'Approved', '2025-09-10'),  -- Usman and Hina swapped Software Engineering
+(3, 5, 6, 105, 'Rejected', '2026-02-01'),  -- Bilal and Ayesha requested Algorithms swap, rejected
+(4, 7, 8, 106, 'Pending',  '2026-02-05'),  -- Hamza and Fatima want to swap Machine Learning
+(5, 2, 5, 101, 'Approved', '2026-02-10');  -- Sara and Bilal swapped Programming Fundamentals
 
 INSERT INTO Teacher_Ratings (student_id,instructor_id,rating,comment,rating_date) VALUES
 (1,2,5,'Excellent! Very clear explanations.','2025-09-10'),
-(2,1,4,'Good lectures, could improve pacing.','2025-09-11');
-
-INSERT INTO Fee_Payments (student_id,amount,payment_date,semester,year) VALUES
-(1,25000,'2025-08-15','Fall',2025),
-(2,25000,'2025-08-16','Fall',2025),
-(4,25000,'2025-08-20','Fall',2025);
-
-INSERT INTO Announcements (instructor_id,section_id,title,body,posted_date) VALUES
-(2,2,'Midterm Schedule','Midterm exam on October 15. Chapters 1-5 are in scope.','2025-09-05'),
-(1,1,'Assignment 1 Due','First assignment due September 20. Submit via portal.','2025-09-06');
-
-INSERT INTO Attendance (student_id,section_id,class_date,status,marked_by) VALUES
-(1,2,'2025-09-03','Present',2),(1,2,'2025-09-05','Present',2),(1,2,'2025-09-08','Present',2),
-(1,2,'2025-09-10','Absent',2),(1,2,'2025-09-12','Present',2),(1,2,'2025-09-15','Present',2),
-(1,2,'2025-09-17','Present',2),(1,2,'2025-09-19','Present',2),(1,2,'2025-09-22','Late',2),
-(1,2,'2025-09-24','Present',2),
-(2,1,'2025-09-03','Present',1),(2,1,'2025-09-05','Present',1),(2,1,'2025-09-08','Absent',1),
-(2,1,'2025-09-10','Absent',1),(2,1,'2025-09-12','Present',1),(2,1,'2025-09-15','Present',1),
-(2,1,'2025-09-17','Present',1),(2,1,'2025-09-19','Present',1),(2,1,'2025-09-22','Present',1),
-(2,1,'2025-09-24','Present',1);
+(2,1,4,'Good lectures, could improve pacing.','2025-09-11'),
+(5,5,5,'Very engaging lectures.','2026-02-10'),
+(6,4,3,'Good but needs more examples.','2026-02-11'),
+(7,2,4,'Clear explanations.','2026-02-12'),
+(1, 4, 4, 'Great at explaining complex calculus. More practice problems would help.', '2025-05-22'),
+(1, 3, 3, 'Good content knowledge but lecture pace is sometimes too fast.', '2025-05-21'),
+(2, 5, 5, 'Dr. Aslam makes programming so fun and approachable!', '2025-05-20'),
+(2, 2, 4, 'Very organized and structured. Tests are always fair.', '2025-05-21'),
+(3, 1, 4, 'Clear explanations, helpful with assignments.', '2026-01-12');
 GO
+
+INSERT INTO Fee_Payments (student_id, amount, payment_date, semester, year) VALUES
+(1, 25000, '2024-08-10', 'Fall',   2024),
+(1, 25000, '2025-01-12', 'Spring', 2025),
+(1, 25000, '2025-08-08', 'Fall',   2025),
+(1, 25000, '2026-01-15', 'Spring', 2026),
+(2, 25000, '2024-08-12', 'Fall',   2024),
+(2, 25000, '2025-01-14', 'Spring', 2025),
+(2, 25000, '2025-08-09', 'Fall',   2025),
+(3, 25000, '2024-08-15', 'Fall',   2024),
+(3, 25000, '2025-01-18', 'Spring', 2025),
+(3, 25000, '2026-01-20', 'Spring', 2026),
+(4, 25000, '2024-08-11', 'Fall',   2024);
+GO
+
+-- Announcements for Fall 2025
+INSERT INTO Announcements (instructor_id, section_id, title, body, posted_date) VALUES
+(1, 41, 'Assignment 2 Released', 'Please complete Assignment 2 by October 5. Submit via LMS.', '2025-09-20'),
+(2, 23, 'Quiz Reminder', 'Quiz 1 will be held on September 25. Topics: Arrays and Linked Lists.', '2025-09-18'),
+(3, 42, 'Project Kickoff', 'Group project on Software Engineering starts October 1. Teams will be assigned.', '2025-09-22'),
+(4, 22, 'Lab Cancelled', 'Database Systems lab on September 28 is cancelled due to maintenance.', '2025-09-25'),
+(1, 44, 'Extra Class', 'Algorithms extra class scheduled for October 3 at 2 PM.', '2025-09-27');
+
+-- Announcements for Spring 2026
+INSERT INTO Announcements (instructor_id, section_id, title, body, posted_date) VALUES
+(5, 7, 'Design Patterns Workshop', 'Attend workshop on Singleton and Factory patterns on March 5.', '2026-02-20'),
+(4, 8, 'OS Midterm', 'Midterm exam scheduled for March 15. Covers Chapters 1–6.', '2026-02-25'),
+(2, 9, 'Deep Learning Seminar', 'Guest lecture on CNNs scheduled for April 10 in Auditorium.', '2026-03-01');
+
+
+
+INSERT INTO Attendance (student_id, section_id, class_date, status, marked_by) VALUES
+-- Aqsa in Database Systems (section 4003)
+(1, 43, '2026-02-03', 'Present', 1),
+(1, 43, '2026-02-05', 'Present', 1),
+(1, 43, '2026-02-10', 'Present', 1),
+(1, 43, '2026-02-12', 'Late',    1),
+(1, 43, '2026-02-17', 'Present', 1),
+(1, 43, '2026-02-19', 'Present', 1),
+(1, 43, '2026-02-24', 'Present', 1),
+(1, 43, '2026-02-26', 'Absent',  1),
+(1, 43, '2026-03-03', 'Present', 1),
+(1, 43, '2026-03-05', 'Present', 1),
+-- Aqsa in AI (section 4001)
+(1, 41, '2026-02-02', 'Present', 2),
+(1, 41, '2026-02-04', 'Present', 2),
+(1, 41, '2026-02-09', 'Present', 2),
+(1, 41, '2026-02-11', 'Present', 2),
+(1, 41, '2026-02-16', 'Absent',  2),
+(1, 41, '2026-02-18', 'Present', 2),
+(1, 41, '2026-02-23', 'Present', 2),
+(1, 41, '2026-02-25', 'Present', 2),
+(1, 41, '2026-03-02', 'Present', 2),
+(1, 41, '2026-03-04', 'Late',    2),
+-- Sara in Data Structures (section 3003)
+(2, 33, '2025-09-03', 'Present', 2),
+(2, 33, '2025-09-05', 'Present', 2),
+(2, 33, '2025-09-08', 'Present', 2),
+(2, 33, '2025-09-10', 'Absent',  2),
+(2, 33, '2025-09-12', 'Present', 2),
+(2, 33, '2025-09-15', 'Present', 2),
+(2, 33, '2025-09-17', 'Present', 2),
+(2, 33, '2025-09-19', 'Late',    2),
+(2, 33, '2025-09-22', 'Present', 2),
+(2, 33, '2025-09-24', 'Present', 2),
+-- Usman in AI (section 4001)
+(3, 41, '2026-02-02', 'Present', 2),
+(3, 41, '2026-02-04', 'Absent',  2),
+(3, 41, '2026-02-09', 'Present', 2),
+(3, 41, '2026-02-11', 'Present', 2),
+(3, 41, '2026-02-16', 'Present', 2),
+(3, 41, '2026-02-18', 'Late',    2),
+(3, 41, '2026-02-23', 'Present', 2),
+(3, 41, '2026-02-25', 'Present', 2);
+GO
+ 
 
 -- ============================================================
 --  SECTION 3: VIEWS
@@ -649,7 +935,7 @@ BEGIN
     END TRY
     BEGIN CATCH
         IF @@TRANCOUNT>0 ROLLBACK;
-        RAISERROR('%s',16,1,ERROR_MESSAGE());
+        THROW;
     END CATCH
 END;
 GO
@@ -682,7 +968,7 @@ BEGIN
     END TRY
     BEGIN CATCH
         IF @@TRANCOUNT>0 ROLLBACK;
-        RAISERROR('%s',16,1,ERROR_MESSAGE());
+        THROW;
     END CATCH
 END;
 GO
@@ -713,7 +999,7 @@ BEGIN
     END TRY
     BEGIN CATCH
         IF @@TRANCOUNT>0 ROLLBACK;
-        RAISERROR('%s',16,1,ERROR_MESSAGE());
+        THROW;
     END CATCH
 END;
 GO
@@ -752,7 +1038,7 @@ BEGIN
     END TRY
     BEGIN CATCH
         IF @@TRANCOUNT>0 ROLLBACK;
-        RAISERROR('%s',16,1,ERROR_MESSAGE());
+        THROW;
     END CATCH
 END;
 GO
@@ -782,7 +1068,7 @@ BEGIN
     END TRY
     BEGIN CATCH
         IF @@TRANCOUNT>0 ROLLBACK;
-        RAISERROR('%s',16,1,ERROR_MESSAGE());
+        THROW;
     END CATCH
 END;
 GO
@@ -838,7 +1124,7 @@ BEGIN
     END TRY
     BEGIN CATCH
         IF @@TRANCOUNT>0 ROLLBACK;
-        RAISERROR('%s',16,1,ERROR_MESSAGE());
+        THROW;
     END CATCH
 END;
 GO
@@ -867,7 +1153,7 @@ BEGIN
     END TRY
     BEGIN CATCH
         IF @@TRANCOUNT>0 ROLLBACK;
-        RAISERROR('%s',16,1,ERROR_MESSAGE());
+        THROW;
     END CATCH
 END;
 GO
@@ -893,7 +1179,7 @@ BEGIN
     END TRY
     BEGIN CATCH
         IF @@TRANCOUNT>0 ROLLBACK;
-        RAISERROR('%s',16,1,ERROR_MESSAGE());
+        THROW;
     END CATCH
 END;
 GO
@@ -925,7 +1211,7 @@ BEGIN
     END TRY
     BEGIN CATCH
         IF @@TRANCOUNT>0 ROLLBACK;
-        RAISERROR('%s',16,1,ERROR_MESSAGE());
+        THROW;
     END CATCH
 END;
 GO
@@ -990,79 +1276,9 @@ BEGIN
     END TRY
     BEGIN CATCH
         IF @@TRANCOUNT>0 ROLLBACK;
-        RAISERROR('%s',16,1,ERROR_MESSAGE());
+        THROW;
     END CATCH
 END;
-GO
-
--- ============================================================
---  SECTION 6: SAMPLE QUERIES (as in original)
--- ============================================================
-
--- Available courses
-SELECT * FROM vw_AvailableCourses ORDER BY available_seats DESC;
-
--- Enroll
-EXEC sp_EnrollStudent @student_id=1, @section_id=1;
-
--- Drop (triggers auto-promote)
-EXEC sp_DropCourse @student_id=1, @section_id=1;
-
--- Credit usage
-SELECT * FROM vw_CreditUsage WHERE student_id=1;
-
--- Add to waitlist
-EXEC sp_AddToWaitingList @student_id=2, @section_id=3;
-
--- View waitlist
-SELECT * FROM vw_WaitingList WHERE section_id=3 ORDER BY position;
-
--- Approve swap
-EXEC sp_ApproveSwap @swap_id=1;
-
--- Create dynamic section
-EXEC sp_CreateDynamicSection @course_id=101, @semester='Spring', @year=2026, @total_seats=30;
-
--- Instructor workload
-SELECT * FROM vw_InstructorWorkload ORDER BY remaining_capacity DESC;
-
--- Enrollment report
-SELECT * FROM vw_StudentEnrollmentReport ORDER BY student_id;
-
--- Section fill rate
-SELECT * FROM vw_SectionFillRate ORDER BY fill_percentage DESC;
-
--- UNION / EXCEPT / INTERSECT
-SELECT student_id,'Enrolled' AS activity FROM Enrollments WHERE status='Registered'
-UNION
-SELECT student_id,'Waiting List' AS activity FROM Waiting_List;
-
-SELECT student_id FROM Waiting_List
-EXCEPT
-SELECT student_id FROM Enrollments WHERE status='Registered';
-
-SELECT student_id FROM Enrollments WHERE status='Registered'
-INTERSECT
-SELECT student_id FROM Waiting_List;
-
--- GPA report
-SELECT * FROM vw_StudentGPA ORDER BY gpa DESC;
-
--- Top students
-SELECT first_name+' '+last_name AS student_name, department
-FROM Students WHERE student_id IN (SELECT student_id FROM Completed_Courses WHERE grade='A');
-
--- Student profile
-EXEC sp_GetStudentProfile @student_id=1;
-
--- Audit log
-SELECT * FROM Audit_Log ORDER BY action_time DESC;
-
--- Attendance summary
-SELECT * FROM vw_AttendanceSummary;
-
--- Pay fees
-EXEC sp_PayFees @student_id=3, @amount=25000, @semester='Fall', @year=2025;
 GO
 
 
