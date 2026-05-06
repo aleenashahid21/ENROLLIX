@@ -898,22 +898,453 @@ function BrowseCoursesPage({ courses }) {
   );
 }
 
-// ─ Prereq Tree Page
-function PrereqTreePage({ user }) {
-  const [tree, setTree] = useState(null);
-  const [completedIds, setCompletedIds] = useState([]);
-  useEffect(() => {
-    get('/prereq-tree').then(setTree).catch(() => {});
-    if (user?.student_id) get('/completed-courses/' + user.student_id).then(cc => setCompletedIds(cc.map(c => c.course_id))).catch(() => {});
-  }, []);
+
+// ═══════════════════════════════════════════════════════════════
+//  COMPLETE REPLACEMENT for PrereqTreePage in App.js
+//  
+//  INSTRUCTIONS:
+//  1. In App.js, find the function PrereqTreePage({ user }) 
+//     (around line 902) and replace the ENTIRE function
+//     (from "function PrereqTreePage" to its closing "}")
+//     with the code below.
+//
+//  2. Also replace the PrereqTree helper function above it
+//     (from "function PrereqTree" to its closing "}") 
+//     with the updated PrereqTree below.
+//
+//  Both functions are included here — paste them together
+//  to replace the old PrereqTree + PrereqTreePage block.
+// ═══════════════════════════════════════════════════════════════
+
+// ─────────────────────────────────────────────────────────────
+//  BCS FULL CURRICULUM DATA  (hardcoded — no DB call needed)
+// ─────────────────────────────────────────────────────────────
+const BCS_PLAN = [
+  {
+    sem: 1, label: 'Semester No. 1', period: 'Fall 2024',
+    courses: [
+      { code: 'NS1001', title: 'Applied Physics',                               cr: 3, type: 'Core' },
+      { code: 'MT1003', title: 'Calculus and Analytical Geometry',               cr: 3, type: 'Core' },
+      { code: 'SS1012', title: 'Functional English',                             cr: 2, type: 'Core' },
+      { code: 'SL1012', title: 'Functional English - Lab',                       cr: 1, type: 'Core' },
+      { code: 'SS1013', title: 'Ideology and Constitution of Pakistan',           cr: 2, type: 'Core' },
+      { code: 'CL1000', title: 'Introduction to Information and Communication Technology', cr: 1, type: 'Core' },
+      { code: 'CS1002', title: 'Programming Fundamentals',                       cr: 3, type: 'Core' },
+      { code: 'CL1002', title: 'Programming Fundamentals - Lab',                 cr: 1, type: 'Core' },
+      { code: 'SS1019', title: 'Understanding Sirat-Un-Nabi (PBUH)',             cr: 1, type: 'Non Credit' },
+    ],
+  },
+  {
+    sem: 2, label: 'Semester No. 2', period: 'Spring 2025',
+    courses: [
+      { code: 'SS2043', title: 'Civics and Community Engagement',                cr: 2, type: 'Core' },
+      { code: 'EE1005', title: 'Digital Logic Design',                           cr: 3, type: 'Core' },
+      { code: 'EL1005', title: 'Digital Logic Design - Lab',                     cr: 1, type: 'Core' },
+      { code: 'SS1014', title: 'Expository Writing',                             cr: 2, type: 'Core' },
+      { code: 'SL1014', title: 'Expository Writing - Lab',                       cr: 1, type: 'Core' },
+      { code: 'SS1007', title: 'Islamic Studies/Ethics',                         cr: 2, type: 'Core' },
+      { code: 'MT1008', title: 'Multivariable Calculus',                         cr: 3, type: 'Core' },
+      { code: 'CS1004', title: 'Object Oriented Programming',                    cr: 3, type: 'Core' },
+      { code: 'CL1004', title: 'Object Oriented Programming - Lab',              cr: 1, type: 'Core' },
+      { code: 'SS1018', title: 'Understanding Holy Quran',                       cr: 1, type: 'Non Credit' },
+      { code: 'SS1019', title: 'Understanding Sirat-Un-Nabi (PBUH)',             cr: 1, type: 'Non Credit' },
+    ],
+  },
+  {
+    sem: 3, label: 'Semester No. 3', period: 'Fall 2025',
+    courses: [
+      { code: 'EE2003', title: 'Computer Organization and Assembly Language',    cr: 3, type: 'Core' },
+      { code: 'EL2003', title: 'Computer Organization and Assembly Language - Lab', cr: 1, type: 'Core' },
+      { code: 'CS2001', title: 'Data Structures',                                cr: 3, type: 'Core' },
+      { code: 'CL2001', title: 'Data Structures - Lab',                          cr: 1, type: 'Core' },
+      { code: 'CS1005', title: 'Discrete Structures',                            cr: 3, type: 'Core' },
+      { code: 'MT1004', title: 'Linear Algebra',                                 cr: 3, type: 'Core' },
+      { code: 'SSX21',  title: 'Social Science Elective - I',                    cr: 2, type: 'Elective' },
+      { code: 'CS3005', title: 'Theory of Automata',                             cr: 3, type: 'Core' },
+      { code: 'MG1009', title: 'Fundamentals of Management',                     cr: 2, type: 'Elective' },
+    ],
+  },
+  {
+    sem: 4, label: 'Semester No. 4', period: 'Spring 2026',
+    courses: [
+      { code: 'AI2002', title: 'Artificial Intelligence',                        cr: 3, type: 'Core' },
+      { code: 'AL2002', title: 'Artificial Intelligence - Lab',                  cr: 1, type: 'Core' },
+      { code: 'CS2005', title: 'Database Systems',                               cr: 3, type: 'Core' },
+      { code: 'CL2005', title: 'Database Systems - Lab',                         cr: 1, type: 'Core' },
+      { code: 'CS2006', title: 'Operating Systems',                              cr: 3, type: 'Core' },
+      { code: 'CL2006', title: 'Operating Systems - Lab',                        cr: 1, type: 'Core' },
+      { code: 'SS1015', title: 'Pakistan Studies',                               cr: 2, type: 'Core' },
+      { code: 'MT2005', title: 'Probability and Statistics',                     cr: 3, type: 'Core' },
+      { code: 'CS3004', title: 'Software Design and Analysis',                   cr: 3, type: 'Elective' },
+      { code: 'CS3009', title: 'Software Engineering',                           cr: 3, type: 'Core' },
+    ],
+  },
+  {
+    sem: 5, label: 'Semester No. 5', period: 'Fall 2026',
+    courses: [
+      { code: 'CS3014', title: 'Applied Human Computer Interaction',             cr: 3, type: 'Core' },
+      { code: 'EE3009', title: 'Computer Architecture',                          cr: 3, type: 'Core' },
+      { code: 'CS3001', title: 'Computer Networks',                              cr: 3, type: 'Core' },
+      { code: 'CL3001', title: 'Computer Networks - Lab',                        cr: 1, type: 'Core' },
+      { code: 'CS2009', title: 'Design and Analysis of Algorithms',              cr: 3, type: 'Core' },
+      { code: 'CS3006', title: 'Parallel and Distributed Computing',             cr: 3, type: 'Core' },
+    ],
+  },
+  {
+    sem: 6, label: 'Semester No. 6', period: 'Spring 2027',
+    courses: [
+      { code: 'CS4087', title: 'Advanced DBMS',                                  cr: 3, type: 'Core' },
+      { code: 'CS4031', title: 'Compiler Construction',                          cr: 3, type: 'Core' },
+      { code: 'CSX01', title: 'CS Elective - I',                                 cr: 3, type: 'Elective' },
+      { code: 'CSX02', title: 'CS Elective - II',                                cr: 3, type: 'Elective' },
+      { code: 'CS3006', title: 'Parallel and Distributed Computing',             cr: 3, type: 'Core' },
+    ],
+  },
+  {
+    sem: 7, label: 'Semester No. 7', period: 'Fall 2027',
+    courses: [
+      { code: 'CS4901', title: 'Final Year Project - I',                         cr: 3, type: 'Core' },
+      { code: 'CS4051', title: 'Information Security',                           cr: 3, type: 'Core' },
+      { code: 'CS4012', title: 'Mobile Application Development',                 cr: 3, type: 'Core' },
+      { code: 'CSX03', title: 'CS Elective - III',                               cr: 3, type: 'Elective' },
+    ],
+  },
+  {
+    sem: 8, label: 'Semester No. 8', period: 'Spring 2028',
+    courses: [
+      { code: 'CS4902', title: 'Final Year Project - II',                        cr: 3, type: 'Core' },
+      { code: 'CS4073', title: 'Professional Practices',                         cr: 2, type: 'Core' },
+      { code: 'CSX04', title: 'CS Elective - IV',                                cr: 3, type: 'Elective' },
+      { code: 'CSX05', title: 'CS Elective - V',                                 cr: 3, type: 'Elective' },
+    ],
+  },
+];
+
+// Which semesters map to which period strings for status checking
+const SEM_STATUS = {
+  1: { sem: 'Fall',   yr: 2024, done: true  },
+  2: { sem: 'Spring', yr: 2025, done: true  },
+  3: { sem: 'Fall',   yr: 2025, done: true  },
+  4: { sem: 'Spring', yr: 2026, done: false, inProgress: true },
+  5: { sem: 'Fall',   yr: 2026, done: false },
+  6: { sem: 'Spring', yr: 2027, done: false },
+  7: { sem: 'Fall',   yr: 2027, done: false },
+  8: { sem: 'Spring', yr: 2028, done: false },
+};
+
+// ─────────────────────────────────────────────────────────────
+//  PREREQ TREE  (updated — replace old PrereqTree function)
+// ─────────────────────────────────────────────────────────────
+function PrrereqTree({ nodes, edges, completedIds = [] }) {
+  if (!nodes || !nodes.length) return <div className="empty"><span className="empty-icon">🌳</span>No course data.</div>;
+  const prereqMap = {};
+  edges.forEach(e => { if (!prereqMap[e.course_id]) prereqMap[e.course_id] = []; prereqMap[e.course_id].push(e.prerequisite_course_id); });
+  const layers = [], placed = new Set();
+  let layer = nodes.filter(n => !edges.find(e => e.course_id === n.course_id));
+  while (layer.length > 0) {
+    layers.push(layer); layer.forEach(n => placed.add(n.course_id));
+    layer = nodes.filter(n => !placed.has(n.course_id) && (prereqMap[n.course_id] || []).every(p => placed.has(p)));
+  }
+  nodes.filter(n => !placed.has(n.course_id)).forEach(n => { layers[layers.length - 1]?.push(n); placed.add(n.course_id); });
+  const W = 140, H = 56, GX = 64, GY = 28, positions = {};
+  layers.forEach((l, li) => l.forEach((n, ni) => { positions[n.course_id] = { x: li * (W + GX), y: ni * (H + GY) + (li % 2 === 0 ? 0 : 28) }; }));
+  const maxX = Math.max(...Object.values(positions).map(p => p.x)) + W + 20;
+  const maxY = Math.max(...Object.values(positions).map(p => p.y)) + H + 20;
+  const done = new Set(completedIds);
   return (
+    <div className="prereq-tree-wrap">
+      <svg width={maxX} height={maxY} style={{ minWidth: maxX }}>
+        <defs><marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="rgba(56,182,255,.4)" /></marker></defs>
+        {edges.map((e, i) => {
+          const f = positions[e.prerequisite_course_id], t = positions[e.course_id];
+          if (!f || !t) return null;
+          return <line key={i} x1={f.x + W} y1={f.y + H / 2} x2={t.x} y2={t.y + H / 2} stroke="rgba(56,182,255,.28)" strokeWidth="1.5" markerEnd="url(#arr)" />;
+        })}
+        {nodes.map(n => {
+          const p = positions[n.course_id]; if (!p) return null;
+          const d = done.has(n.course_id);
+          return (
+            <g key={n.course_id}>
+              <rect x={p.x} y={p.y} width={W} height={H} rx="9"
+                fill={d ? 'rgba(34,197,94,.07)' : 'rgba(56,182,255,.05)'}
+                stroke={d ? 'rgba(34,197,94,.28)' : 'rgba(56,182,255,.2)'} strokeWidth="1" />
+              {d && <text x={p.x + W - 12} y={p.y + 14} fontSize="10" fill="#4ade80">✓</text>}
+              <text x={p.x + W / 2} y={p.y + 20} textAnchor="middle" fontSize="11" fontWeight="700" fill={d ? '#4ade80' : '#38b6ff'} fontFamily="Orbitron,sans-serif">{n.course_code}</text>
+              <text x={p.x + W / 2} y={p.y + 33} textAnchor="middle" fontSize="9" fill="#3a6a8a">{n.course_title.length > 18 ? n.course_title.slice(0, 17) + '…' : n.course_title}</text>
+              <text x={p.x + W / 2} y={p.y + 46} textAnchor="middle" fontSize="8" fill="#1a3a5c">{n.credit_hours} cr · {n.department}</text>
+            </g>
+          );
+        })}
+      </svg>
+      <div style={{ display: 'flex', gap: 12, marginTop: 10, fontSize: 11, flexWrap: 'wrap' }}>
+        <span style={{ color: '#4ade80' }}>✓ Completed</span>
+        <span style={{ color: '#38b6ff' }}>□ Pending</span>
+        <span style={{ color: '#1a3a5c' }}>→ Requires</span>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+//  PREREQ TREE PAGE  (replace the old PrereqTreePage function)
+// ─────────────────────────────────────────────────────────────
+function PrereqTreePage({ user }) {
+  const [tab, setTab] = useState('plan');
+  const [tree, setTree] = useState(null);
+  const [completedCodes, setCompletedCodes] = useState(new Set());
+  const [inProgressCodes, setInProgressCodes] = useState(new Set());
+  const [completedIds, setCompletedIds] = useState([]);
+
+  useEffect(() => {
+    // Load prereq tree for the map tab
+    get('/prereq-tree').then(setTree).catch(() => {});
+
+    if (user?.student_id) {
+      // Load completed courses → extract codes
+      get('/completed-courses/' + user.student_id)
+        .then(cc => {
+          setCompletedIds(cc.map(c => c.course_id));
+          setCompletedCodes(new Set(cc.map(c => c.course_code)));
+        })
+        .catch(() => {});
+
+      // Load current enrollments → codes that are in-progress
+      get('/my-enrollments/' + user.student_id)
+        .then(enr => {
+          setInProgressCodes(new Set(enr.map(e => e.course_code).filter(Boolean)));
+        })
+        .catch(() => {});
+    }
+  }, [user]);
+
+  // Determine status of a single course card
+  const getCourseStatus = (code) => {
+    if (completedCodes.has(code)) return 'completed';
+    if (inProgressCodes.has(code)) return 'inprogress';
+    return 'upcoming';
+  };
+
+  // Determine semester block status
+  const getSemStatus = (semNum, courses) => {
+    const allCodes = courses.map(c => c.code);
+    const creditCourses = courses.filter(c => c.type !== 'Non Credit');
+    const completedCount = creditCourses.filter(c => completedCodes.has(c.code)).length;
+    const inProgressCount = allCodes.filter(c => inProgressCodes.has(c)).length;
+
+    if (completedCount === creditCourses.length && creditCourses.length > 0) return 'done';
+    if (inProgressCount > 0) return 'inprogress';
+    return 'upcoming';
+  };
+
+  const totalCredits = (courses) =>
+    courses.filter(c => c.type !== 'Non Credit').reduce((s, c) => s + c.cr, 0);
+
+  const completedCredits = (courses) =>
+    courses.filter(c => c.type !== 'Non Credit' && completedCodes.has(c.code)).reduce((s, c) => s + c.cr, 0);
+
+  const completedCount = (courses) =>
+    courses.filter(c => c.type !== 'Non Credit' && completedCodes.has(c.code)).length;
+
+  // Color & style helpers
+  const typeColor = (type) => {
+    if (type === 'Core') return { color: '#38b6ff', bg: 'rgba(56,182,255,.1)', border: 'rgba(56,182,255,.2)' };
+    if (type === 'Elective') return { color: '#a78bfa', bg: 'rgba(167,139,250,.1)', border: 'rgba(167,139,250,.2)' };
+    return { color: '#3a5a7c', bg: 'rgba(255,255,255,.03)', border: 'rgba(255,255,255,.07)' };
+  };
+
+  const statusStyle = (semStatus) => {
+    if (semStatus === 'done')       return { border: '1px solid rgba(74,222,128,.3)', headerColor: '#4ade80', bg: 'rgba(34,197,94,.03)' };
+    if (semStatus === 'inprogress') return { border: '1px solid rgba(251,191,36,.3)', headerColor: '#fbbf24', bg: 'rgba(251,191,36,.03)' };
+    return { border: '1px solid rgba(56,182,255,.1)', headerColor: '#38b6ff', bg: 'rgba(56,182,255,.02)' };
+  };
+
+  // ── STUDY PLAN RENDER ──────────────────────────────────────
+  const renderStudyPlan = () => {
+    // Group semesters into 2-column grid pairs
+    const pairs = [];
+    for (let i = 0; i < BCS_PLAN.length; i += 2) {
+      pairs.push([BCS_PLAN[i], BCS_PLAN[i + 1]].filter(Boolean));
+    }
+
+    return (
+      <div className="page-enter">
+        <div className="msg msg-info" style={{ marginBottom: 14 }}>
+          <span>ℹ</span>
+          <span>Your full BCS study plan. <strong style={{ color: '#4ade80' }}>Green = completed</strong>, <strong style={{ color: '#fbbf24' }}>yellow = in-progress</strong>, <strong style={{ color: '#38b6ff' }}>blue = upcoming</strong>.</span>
+        </div>
+
+        {pairs.map((pair, pi) => (
+          <div key={pi} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+            {pair.map((sem) => {
+              const semStatus = getSemStatus(sem.sem, sem.courses);
+              const ss = statusStyle(semStatus);
+              const done = completedCount(sem.courses);
+              const total = sem.courses.filter(c => c.type !== 'Non Credit').length;
+              const crDone = completedCredits(sem.courses);
+              const crTotal = totalCredits(sem.courses);
+
+              return (
+                <div key={sem.sem} style={{
+                  background: ss.bg,
+                  border: ss.border,
+                  borderRadius: 13,
+                  padding: '14px 16px',
+                  position: 'relative',
+                  overflow: 'hidden',
+                }}>
+                  {/* Top glow line */}
+                  <div style={{
+                    position: 'absolute', top: 0, left: 0, right: 0, height: 1,
+                    background: `linear-gradient(90deg,transparent,${ss.headerColor}44,transparent)`,
+                  }} />
+
+                  {/* Header row */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+                    <div>
+                      <div style={{
+                        fontFamily: "'Orbitron',sans-serif", fontWeight: 700, fontSize: 13,
+                        color: ss.headerColor, marginBottom: 2,
+                      }}>{sem.label}</div>
+                      <div style={{ fontSize: 10.5, color: '#1a3a5c' }}>({sem.period})</div>
+                    </div>
+                    <div style={{ textAlign: 'right', fontSize: 10, color: '#1a3a5c', lineHeight: 1.7 }}>
+                      <div>{done}/{total} done · {crDone} cr</div>
+                      {semStatus === 'done' && <div style={{ color: '#4ade80', fontWeight: 600 }}>✓ Complete</div>}
+                      {semStatus === 'inprogress' && <div style={{ color: '#fbbf24', fontWeight: 600 }}>⟳ In Progress</div>}
+                      {semStatus === 'upcoming' && <div style={{ color: '#1a3a5c' }}>□ Upcoming</div>}
+                    </div>
+                  </div>
+
+                  {/* Column headers */}
+                  <div style={{
+                    display: 'grid', gridTemplateColumns: '68px 1fr 28px 70px',
+                    gap: 4, padding: '4px 6px',
+                    borderBottom: '1px solid rgba(56,182,255,.07)', marginBottom: 4,
+                  }}>
+                    {['CODE', 'COURSE NAME', 'CR', 'TYPE'].map(h => (
+                      <span key={h} style={{
+                        fontSize: 8.5, fontWeight: 700, color: '#0f2540',
+                        fontFamily: "'Orbitron',sans-serif", letterSpacing: '.08em',
+                      }}>{h}</span>
+                    ))}
+                  </div>
+
+                  {/* Course rows */}
+                  {sem.courses.map((course, ci) => {
+                    const cs = getCourseStatus(course.code);
+                    const tc = typeColor(course.type);
+                    const rowColor =
+                      cs === 'completed'  ? 'rgba(74,222,128,.03)'  :
+                      cs === 'inprogress' ? 'rgba(251,191,36,.03)'  :
+                      'transparent';
+                    const codeColor =
+                      cs === 'completed'  ? '#4ade80' :
+                      cs === 'inprogress' ? '#fbbf24' :
+                      '#38b6ff';
+
+                    return (
+                      <div key={ci} style={{
+                        display: 'grid', gridTemplateColumns: '68px 1fr 28px 70px',
+                        gap: 4, padding: '5px 6px',
+                        background: rowColor,
+                        borderRadius: 5,
+                        borderBottom: '1px solid rgba(255,255,255,.02)',
+                        alignItems: 'center',
+                      }}>
+                        {/* Code */}
+                        <span style={{
+                          fontFamily: "'Orbitron',sans-serif", fontWeight: 700,
+                          fontSize: 9.5, color: codeColor,
+                          display: 'flex', alignItems: 'center', gap: 3,
+                        }}>
+                          {cs === 'completed' && <span style={{ color: '#4ade80', fontSize: 8 }}>✓</span>}
+                          {cs === 'inprogress' && <span style={{ color: '#fbbf24', fontSize: 8 }}>⟳</span>}
+                          {cs === 'upcoming' && <span style={{ color: '#1a3a5c', fontSize: 8 }}>□</span>}
+                          {course.code}
+                        </span>
+
+                        {/* Title */}
+                        <span style={{
+                          fontSize: 11, lineHeight: 1.3,
+                          color: cs === 'completed' ? '#7acfa0' : cs === 'inprogress' ? '#c4aa60' : '#7ab8e8',
+                        }}>
+                          {course.title}
+                        </span>
+
+                        {/* Credits */}
+                        <span style={{
+                          fontSize: 11, color: '#3a6a8a', textAlign: 'center',
+                        }}>{course.cr}</span>
+
+                        {/* Type pill */}
+                        <span style={{
+                          fontSize: 8.5, padding: '2px 5px', borderRadius: 6,
+                          background: tc.bg, color: tc.color, border: `1px solid ${tc.border}`,
+                          fontFamily: "'Orbitron',sans-serif", letterSpacing: '.03em',
+                          whiteSpace: 'nowrap', textAlign: 'center',
+                        }}>{course.type}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+
+        {/* Legend */}
+        <div style={{
+          display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap',
+          padding: '10px 14px', background: 'rgba(255,255,255,.02)',
+          borderRadius: 9, border: '1px solid rgba(56,182,255,.05)', fontSize: 11,
+        }}>
+          <span style={{ color: '#4ade80' }}>✓ Completed</span>
+          <span style={{ color: '#fbbf24' }}>⟳ In Progress</span>
+          <span style={{ color: '#3a6a8a' }}>□ Upcoming</span>
+          <span style={{ marginLeft: 8 }}><span style={{ background: 'rgba(56,182,255,.1)', color: '#38b6ff', padding: '2px 6px', borderRadius: 4, fontSize: 9, fontFamily: "'Orbitron',sans-serif" }}>Core</span></span>
+          <span><span style={{ background: 'rgba(167,139,250,.1)', color: '#a78bfa', padding: '2px 6px', borderRadius: 4, fontSize: 9, fontFamily: "'Orbitron',sans-serif" }}>Elective</span></span>
+          <span><span style={{ background: 'rgba(255,255,255,.03)', color: '#3a5a7c', padding: '2px 6px', borderRadius: 4, fontSize: 9, fontFamily: "'Orbitron',sans-serif" }}>Non Credit</span></span>
+        </div>
+      </div>
+    );
+  };
+
+  // ── PREREQ MAP RENDER ──────────────────────────────────────
+  const renderPrereqMap = () => (
     <div className="page-enter">
-      <InfoBox>Visual map of all course prerequisites. Arrows show what each course requires.</InfoBox>
+      <div className="msg msg-info" style={{ marginBottom: 12 }}>
+        <span>ℹ</span><span>Visual map of all course prerequisites. Arrows show what each course requires. Green = completed by you.</span>
+      </div>
       <div className="card">
         <div className="card-title">Course Prerequisite Map</div>
-        {tree ? <PrereqTree nodes={tree.nodes} edges={tree.edges} completedIds={completedIds} />
-          : <div className="empty"><span className="dot" /><span className="dot" /><span className="dot" /></div>}
+        {tree
+          ? <PrereqTree nodes={tree.nodes} edges={tree.edges} completedIds={completedIds} />
+          : <div className="empty"><span className="dot" /><span className="dot" /><span className="dot" /></div>
+        }
       </div>
+    </div>
+  );
+
+  // ── MAIN RENDER ────────────────────────────────────────────
+  return (
+    <div>
+      {/* Tab switcher */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+        <button
+          className={tab === 'plan' ? 'btn btn-primary' : 'btn btn-ghost'}
+          onClick={() => { setTab('plan'); SFX.click(); }}
+        >
+          📋 Study Plan
+        </button>
+        <button
+          className={tab === 'map' ? 'btn btn-primary' : 'btn btn-ghost'}
+          onClick={() => { setTab('map'); SFX.click(); }}
+        >
+          🌳 Prereq Map
+        </button>
+      </div>
+
+      {tab === 'plan' ? renderStudyPlan() : renderPrereqMap()}
     </div>
   );
 }
@@ -1178,46 +1609,361 @@ function CompletedCoursesPage({ user }) {
   );
 }
 
-// ─ Transcript
+// ═══════════════════════════════════════════════════════════════
+//  REPLACEMENT TranscriptPage for App.js
+//
+//  INSTRUCTIONS:
+//  In App.js, find "function TranscriptPage({ user })"
+//  (around line 1182) and replace the ENTIRE function
+//  (from "function TranscriptPage" to its closing "}")
+//  with the code below.
+// ═══════════════════════════════════════════════════════════════
+
 function TranscriptPage({ user }) {
-  const [data, setData] = useState(null); const [loading, setLoading] = useState(true);
-  useEffect(() => { get('/transcript/' + user.student_id).then(setData).catch(() => {}).finally(() => setLoading(false)); }, []);
-  if (loading) return <div className="empty"><span className="dot" /><span className="dot" /><span className="dot" /></div>;
-  if (!data) return <div className="empty">No data.</div>;
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    get('/transcript/' + user.student_id)
+      .then(setData)
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return (
+    <div className="empty" style={{ marginTop: 40 }}>
+      <span className="dot" /><span className="dot" /><span className="dot" />
+    </div>
+  );
+  if (!data) return <div className="empty">No transcript data.</div>;
+
   const { student, completed_courses, current_enrollments } = data;
-  const gc = g => g === 'A' || g === 'A-' ? '#4ade80' : g.startsWith('B') ? '#38b6ff' : g.startsWith('C') ? '#fbbf24' : '#f87171';
+
+  // ── Group completed courses by semester+year ──────────────
+  const semMap = {};
+  (completed_courses || []).forEach(c => {
+    const key = `${c.semester_completed}|${c.year_completed}`;
+    if (!semMap[key]) semMap[key] = { sem: c.semester_completed, yr: c.year_completed, courses: [] };
+    semMap[key].courses.push(c);
+  });
+
+  // Sort semesters chronologically
+  const semOrder = { Spring: 0, Summer: 1, Fall: 2 };
+  const semGroups = Object.values(semMap).sort((a, b) =>
+    a.yr !== b.yr ? a.yr - b.yr : semOrder[a.sem] - semOrder[b.sem]
+  );
+
+  // ── Calculate per-semester stats ─────────────────────────
+  const calcSemStats = (courses) => {
+    const creditCourses = courses.filter(c => c.grade !== 'S' && c.grade !== 'NC');
+    const crAtt  = creditCourses.reduce((s, c) => s + (c.credit_hours || 0), 0);
+    const crErnd = creditCourses.reduce((s, c) => s + (c.credit_hours || 0), 0); // assume all earned
+    const totalQP = creditCourses.reduce((s, c) => s + ((c.grade_points || 0) * (c.credit_hours || 0)), 0);
+    const sgpa = crErnd > 0 ? (totalQP / crErnd).toFixed(2) : '0.00';
+    return { crAtt, crErnd, sgpa };
+  };
+
+  // Running CGPA up to each semester
+  let runningQP = 0, runningCr = 0;
+  const semStatsAll = semGroups.map(sg => {
+    const stats = calcSemStats(sg.courses);
+    const creditCourses = sg.courses.filter(c => c.grade !== 'S' && c.grade !== 'NC');
+    runningQP += creditCourses.reduce((s, c) => s + ((c.grade_points || 0) * (c.credit_hours || 0)), 0);
+    runningCr += creditCourses.reduce((s, c) => s + (c.credit_hours || 0), 0);
+    const cgpa = runningCr > 0 ? (runningQP / runningCr).toFixed(2) : '0.00';
+    return { ...stats, cgpa };
+  });
+
+  // ── Grade color ───────────────────────────────────────────
+  const gc = g => {
+    if (!g) return '#3a6a8a';
+    if (g === 'A' || g === 'A-') return '#4ade80';
+    if (g.startsWith('B')) return '#38b6ff';
+    if (g.startsWith('C')) return '#fbbf24';
+    if (g === 'S') return '#a78bfa';
+    return '#f87171';
+  };
+
+  // ── Overall CGPA from student object ─────────────────────
+  const overallCGPA = student?.gpa ? Number(student.gpa).toFixed(2) : '0.00';
+  const totalCreditsEarned = student?.total_credits_earned || 0;
+  const totalCoursesCompleted = student?.courses_completed || 0;
+
+  // ── Semester column layout (2 per row, like screenshot) ───
+  const pairs = [];
+  for (let i = 0; i < semGroups.length; i += 2) {
+    pairs.push([
+      { group: semGroups[i],   stats: semStatsAll[i] },
+      semGroups[i + 1] ? { group: semGroups[i + 1], stats: semStatsAll[i + 1] } : null,
+    ].filter(Boolean));
+  }
+
+  // Add current semester as last block if student has active enrollments
+  const hasCurrent = current_enrollments && current_enrollments.length > 0;
+  const currentSem = hasCurrent ? current_enrollments[0] : null;
+
   return (
     <div className="page-enter">
-      <div style={{ background: 'linear-gradient(135deg,rgba(56,182,255,.07),rgba(167,139,250,.04))', border: '1px solid rgba(56,182,255,.12)', borderRadius: 14, padding: '20px 24px', marginBottom: 16 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
-          <div>
-            <div style={{ fontFamily: "'Orbitron',sans-serif", fontSize: 9, color: '#1a3a5c', letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 4 }}>Official Academic Transcript</div>
-            <div style={{ fontFamily: "'Orbitron',sans-serif", fontWeight: 900, fontSize: 18, color: '#e2f0ff' }}>{student?.name}</div>
-            <div style={{ fontSize: 12, color: '#3a6a8a', marginTop: 4 }}><span className="pill pill-blue" style={{ marginRight: 8 }}>{student?.department}</span>Semester {student?.semester} · {student?.email}</div>
+
+      {/* ── Student header card ── */}
+      <div style={{
+        background: 'linear-gradient(135deg,rgba(56,182,255,.07),rgba(167,139,250,.04))',
+        border: '1px solid rgba(56,182,255,.15)', borderRadius: 14,
+        padding: '18px 22px', marginBottom: 16,
+        display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
+        flexWrap: 'wrap', gap: 16,
+      }}>
+        <div>
+          <div style={{
+            fontFamily: "'Orbitron',sans-serif", fontSize: 8.5, color: '#1a3a5c',
+            letterSpacing: '.14em', textTransform: 'uppercase', marginBottom: 6,
+          }}>Official Academic Transcript</div>
+          <div style={{
+            fontFamily: "'Orbitron',sans-serif", fontWeight: 900, fontSize: 20, color: '#e2f0ff', marginBottom: 6,
+          }}>{student?.name}</div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+            <span className="pill pill-blue">{student?.department}</span>
+            <span style={{ fontSize: 11.5, color: '#3a6a8a' }}>Semester {student?.semester}</span>
+            <span style={{ fontSize: 11, color: '#1a3a5c' }}>·</span>
+            <span style={{ fontSize: 11, color: '#1a3a5c' }}>{student?.email}</span>
           </div>
-          <div style={{ textAlign: 'right' }}>
-            {student && <CGPAGauge cgpa={student.gpa || 0} />}
-            <div style={{ fontSize: 10, color: '#1a3a5c', marginTop: 4 }}>{student?.courses_completed || 0} courses · {student?.total_credits_earned || 0} credits</div>
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          {student && <CGPAGauge cgpa={student.gpa || 0} />}
+          <div style={{ fontSize: 10.5, color: '#1a3a5c', marginTop: 4 }}>
+            {totalCoursesCompleted} courses completed · {totalCreditsEarned} credit hours earned
           </div>
         </div>
       </div>
-      {completed_courses?.length > 0 && <div className="card"><div className="card-title">Completed Courses</div>
-        <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr 55px 55px 55px', gap: 8, padding: '0 0 8px', marginBottom: 8, borderBottom: '1px solid rgba(255,255,255,.04)' }}>
-          {['Code', 'Title', 'Credits', 'Grade', 'GPA'].map(h => <span key={h} style={{ fontSize: 9, fontWeight: 700, color: '#1a3a5c', textTransform: 'uppercase', letterSpacing: '.08em', fontFamily: "'Orbitron',sans-serif" }}>{h}</span>)}
+
+      {/* ── Semester blocks in 2-column grid ── */}
+      {pairs.map((pair, pi) => (
+        <div key={pi} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+          {pair.map(({ group, stats }, si) => (
+            <div key={si} style={{
+              background: 'linear-gradient(145deg,#080f1e,#060a17)',
+              border: '1px solid rgba(56,182,255,.1)', borderRadius: 13, overflow: 'hidden',
+              position: 'relative',
+            }}>
+              {/* Top accent */}
+              <div style={{
+                position: 'absolute', top: 0, left: 0, right: 0, height: 1,
+                background: 'linear-gradient(90deg,transparent,rgba(56,182,255,.3),transparent)',
+              }} />
+
+              {/* Semester header */}
+              <div style={{
+                padding: '12px 16px 8px',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
+              }}>
+                <div>
+                  <div style={{
+                    fontFamily: "'Orbitron',sans-serif", fontWeight: 700, fontSize: 13, color: '#38b6ff', marginBottom: 2,
+                  }}>{group.sem} {group.yr}</div>
+                </div>
+                <div style={{ textAlign: 'right', fontSize: 9.5, color: '#1a3a5c', lineHeight: 1.8, fontFamily: "'Orbitron',sans-serif", letterSpacing: '.04em' }}>
+                  <div>Cr. Att:{stats.crAtt} &nbsp; Cr. Ernd:{stats.crErnd}</div>
+                  <div>CGPA:{stats.cgpa} &nbsp; SGPA:{stats.sgpa}</div>
+                </div>
+              </div>
+
+              {/* Table header */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '64px 1fr 52px 52px 52px 60px 80px',
+                gap: 2, padding: '4px 16px',
+                background: 'rgba(56,182,255,.08)',
+                borderTop: '1px solid rgba(56,182,255,.07)',
+                borderBottom: '1px solid rgba(56,182,255,.07)',
+              }}>
+                {['Code', 'Course Name', 'Section', 'CrdHrs', 'Grade', 'Points', 'Type'].map(h => (
+                  <span key={h} style={{
+                    fontSize: 7.5, fontWeight: 700, color: '#e2f0ff',
+                    fontFamily: "'Orbitron',sans-serif", letterSpacing: '.06em', textTransform: 'uppercase',
+                  }}>{h}</span>
+                ))}
+              </div>
+
+              {/* Course rows */}
+              <div style={{ padding: '0 16px 10px' }}>
+                {group.courses.map((c, ci) => {
+                  const isNonCredit = c.grade === 'S' || c.credit_hours === 0;
+                  return (
+                    <div key={ci} style={{
+                      display: 'grid',
+                      gridTemplateColumns: '64px 1fr 52px 52px 52px 60px 80px',
+                      gap: 2, padding: '6px 0',
+                      borderBottom: ci < group.courses.length - 1 ? '1px solid rgba(255,255,255,.025)' : 'none',
+                      alignItems: 'center',
+                    }}>
+                      {/* Code */}
+                      <span style={{
+                        fontFamily: "'Orbitron',sans-serif", fontWeight: 700, fontSize: 9,
+                        color: '#38b6ff',
+                      }}>{c.course_code}</span>
+
+                      {/* Title */}
+                      <span style={{ fontSize: 11, color: '#c4d8f0', lineHeight: 1.3 }}>
+                        {c.course_title}
+                      </span>
+
+                      {/* Section — we don't have it in the API, use department as proxy */}
+                      <span style={{ fontSize: 9.5, color: '#1a3a5c', textAlign: 'center' }}>
+                        —
+                      </span>
+
+                      {/* Credit hours */}
+                      <span style={{ fontSize: 11, color: '#7ab8e8', textAlign: 'center' }}>
+                        {c.credit_hours}
+                      </span>
+
+                      {/* Grade */}
+                      <span style={{
+                        fontSize: 11, fontWeight: 700, textAlign: 'center',
+                        color: gc(c.grade), fontFamily: "'Orbitron',sans-serif",
+                      }}>{c.grade}</span>
+
+                      {/* Grade points */}
+                      <span style={{
+                        fontSize: 11, color: '#38b6ff', textAlign: 'center',
+                        fontFamily: "'Orbitron',sans-serif", fontWeight: 600,
+                      }}>
+                        {isNonCredit ? '—' : Number(c.grade_points).toFixed(2)}
+                      </span>
+
+                      {/* Type */}
+                      <span style={{ fontSize: 9.5, color: '#3a6a8a' }}>
+                        {isNonCredit ? (
+                          <span style={{
+                            background: 'rgba(255,255,255,.04)', color: '#3a5a7c',
+                            padding: '1px 5px', borderRadius: 4, fontSize: 8.5,
+                            border: '1px solid rgba(255,255,255,.07)',
+                          }}>Non Credit</span>
+                        ) : (
+                          <span style={{
+                            background: 'rgba(56,182,255,.07)', color: '#38b6ff',
+                            padding: '1px 5px', borderRadius: 4, fontSize: 8.5,
+                            border: '1px solid rgba(56,182,255,.15)',
+                          }}>Core</span>
+                        )}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
-        {completed_courses.map((c, i) => <div key={i} className="transcript-row">
-          <span style={{ color: '#38b6ff', fontFamily: "'Orbitron',sans-serif", fontWeight: 700, fontSize: 11 }}>{c.course_code}</span>
-          <span style={{ color: '#c4d8f0' }}>{c.course_title}</span>
-          <span style={{ textAlign: 'center', color: '#3a6a8a' }}>{c.credit_hours}</span>
-          <span style={{ textAlign: 'center', fontWeight: 700, color: gc(c.grade), fontFamily: "'Orbitron',sans-serif" }}>{c.grade}</span>
-          <span style={{ textAlign: 'center', color: '#38b6ff' }}>{c.grade_points}</span>
-        </div>)}
-      </div>}
-      {current_enrollments?.length > 0 && <div className="card"><div className="card-title">Current — Fall 2025</div>
-        <table className="tbl"><thead><tr><th>Code</th><th>Course</th><th>Credits</th><th>Instructor</th><th>Status</th></tr></thead>
-        <tbody>{current_enrollments.map((c, i) => <tr key={i}><td style={{ fontFamily: "'Orbitron',sans-serif", fontWeight: 700, color: '#38b6ff', fontSize: 11 }}>{c.course_code}</td><td>{c.course_title}</td><td><span className="pill pill-purple">{c.credit_hours} cr</span></td><td style={{ color: '#3a6a8a' }}>{c.instructor}</td><td><Pill s="Registered" /></td></tr>)}</tbody>
-        </table>
-      </div>}
+      ))}
+
+      {/* ── Current semester (in-progress) ── */}
+      {hasCurrent && (
+        <div style={{
+          background: 'linear-gradient(145deg,rgba(251,191,36,.04),rgba(56,182,255,.02))',
+          border: '1px solid rgba(251,191,36,.2)', borderRadius: 13, overflow: 'hidden',
+          marginBottom: 14, position: 'relative',
+        }}>
+          <div style={{
+            position: 'absolute', top: 0, left: 0, right: 0, height: 1,
+            background: 'linear-gradient(90deg,transparent,rgba(251,191,36,.4),transparent)',
+          }} />
+
+          {/* Header */}
+          <div style={{
+            padding: '12px 16px 8px',
+            display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
+          }}>
+            <div>
+              <div style={{
+                fontFamily: "'Orbitron',sans-serif", fontWeight: 700, fontSize: 13, color: '#fbbf24', marginBottom: 2,
+              }}>{currentSem?.semester} {currentSem?.year}</div>
+              <span className="pill pill-amber" style={{ fontSize: 8.5 }}>⟳ In Progress</span>
+            </div>
+            <div style={{
+              textAlign: 'right', fontSize: 9.5, color: '#1a3a5c',
+              fontFamily: "'Orbitron',sans-serif", letterSpacing: '.04em',
+            }}>
+              Cr. Att:{current_enrollments.reduce((s, c) => s + (c.credit_hours || 0), 0)}&nbsp;
+              Cr. Ernd:{current_enrollments.reduce((s, c) => s + (c.credit_hours || 0), 0)}&nbsp;
+              CGPA:{overallCGPA}&nbsp;SGPA:0
+            </div>
+          </div>
+
+          {/* Column header */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '64px 1fr 52px 52px 52px 60px 80px',
+            gap: 2, padding: '4px 16px',
+            background: 'rgba(251,191,36,.06)',
+            borderTop: '1px solid rgba(251,191,36,.1)',
+            borderBottom: '1px solid rgba(251,191,36,.1)',
+          }}>
+            {['Code', 'Course Name', 'Section', 'CrdHrs', 'Grade', 'Points', 'Type'].map(h => (
+              <span key={h} style={{
+                fontSize: 7.5, fontWeight: 700, color: '#e2f0ff',
+                fontFamily: "'Orbitron',sans-serif", letterSpacing: '.06em',
+              }}>{h}</span>
+            ))}
+          </div>
+
+          {/* In-progress course rows */}
+          <div style={{ padding: '0 16px 10px' }}>
+            {current_enrollments.map((c, ci) => (
+              <div key={ci} style={{
+                display: 'grid',
+                gridTemplateColumns: '64px 1fr 52px 52px 52px 60px 80px',
+                gap: 2, padding: '6px 0',
+                borderBottom: ci < current_enrollments.length - 1 ? '1px solid rgba(255,255,255,.025)' : 'none',
+                alignItems: 'center',
+              }}>
+                <span style={{
+                  fontFamily: "'Orbitron',sans-serif", fontWeight: 700, fontSize: 9, color: '#fbbf24',
+                }}>{c.course_code}</span>
+                <span style={{ fontSize: 11, color: '#c4d8f0', lineHeight: 1.3 }}>{c.course_title}</span>
+                <span style={{ fontSize: 9.5, color: '#1a3a5c', textAlign: 'center' }}>—</span>
+                <span style={{ fontSize: 11, color: '#7ab8e8', textAlign: 'center' }}>{c.credit_hours}</span>
+                <span style={{
+                  fontSize: 10, fontWeight: 700, textAlign: 'center', color: '#fbbf24',
+                  fontFamily: "'Orbitron',sans-serif",
+                }}>I</span>
+                <span style={{ fontSize: 11, color: '#3a6a8a', textAlign: 'center' }}>0</span>
+                <span>
+                  {c.course_code?.startsWith('CSX') || c.course_code === 'CS3004'
+                    ? <span style={{ background: 'rgba(167,139,250,.1)', color: '#a78bfa', padding: '1px 5px', borderRadius: 4, fontSize: 8.5, border: '1px solid rgba(167,139,250,.2)' }}>Elective</span>
+                    : <span style={{ background: 'rgba(56,182,255,.07)', color: '#38b6ff', padding: '1px 5px', borderRadius: 4, fontSize: 8.5, border: '1px solid rgba(56,182,255,.15)' }}>Core</span>
+                  }
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Summary bar ── */}
+      <div style={{
+        display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center',
+        padding: '12px 16px',
+        background: 'rgba(56,182,255,.04)',
+        border: '1px solid rgba(56,182,255,.1)', borderRadius: 11,
+      }}>
+        <span style={{ fontSize: 11, color: '#3a6a8a' }}>
+          Total Courses Completed: <strong style={{ color: '#e2f0ff' }}>{totalCoursesCompleted}</strong>
+        </span>
+        <span style={{ color: '#0f2540' }}>·</span>
+        <span style={{ fontSize: 11, color: '#3a6a8a' }}>
+          Credit Hours Earned: <strong style={{ color: '#e2f0ff' }}>{totalCreditsEarned}</strong>
+        </span>
+        <span style={{ color: '#0f2540' }}>·</span>
+        <span style={{ fontSize: 11, color: '#3a6a8a' }}>
+          Cumulative GPA: <strong style={{ color: '#38b6ff', fontFamily: "'Orbitron',sans-serif" }}>{overallCGPA}</strong>
+        </span>
+        <span style={{ marginLeft: 'auto' }}>
+          <span className={`pill pill-${Number(overallCGPA) >= 3.5 ? 'green' : Number(overallCGPA) >= 3.0 ? 'blue' : Number(overallCGPA) >= 2.0 ? 'amber' : 'red'}`}>
+            {Number(overallCGPA) >= 3.5 ? 'Distinction' : Number(overallCGPA) >= 3.0 ? 'Merit' : Number(overallCGPA) >= 2.0 ? 'Pass' : 'Academic Warning'}
+          </span>
+        </span>
+      </div>
+
     </div>
   );
 }
