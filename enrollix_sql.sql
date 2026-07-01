@@ -1281,4 +1281,129 @@ BEGIN
 END;
 GO
 
+CREATE TRIGGER trg_AutoCreateSection
+ON Waiting_List AFTER INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Work through every distinct section that just got a new waiter
+    DECLARE @section_id   INT;
+    DECLARE @course_id    INT;
+    DECLARE @semester     VARCHAR(20);
+    DECLARE @year         INT;
+    DECLARE @waiters      INT;
+    DECLARE @new_sec_id   INT;
+    DECLARE @enroll_id    INT;
+    DECLARE @student_id   INT;
+    DECLARE @waiting_id   INT;
+
+    -- Cursor over the distinct sections touched by this INSERT batch
+    DECLARE sec_cur CURSOR LOCAL FAST_FORWARD FOR
+        SELECT DISTINCT i.section_id
+        FROM inserted i;
+
+    OPEN sec_cur;
+    FETCH NEXT FROM sec_cur INTO @section_id;
+
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        -- Count how many students are now waiting for this section
+        SELECT @waiters = COUNT(*)
+        FROM Waiting_List
+        WHERE section_id = @section_id;
+
+        IF @waiters >= 10
+        BEGIN
+            -- Identify the course and semester from the section
+            SELECT @course_id = course_id,
+                   @semester  = semester,
+                   @year      = year
+            FROM Sections
+            WHERE section_id = @section_id;
+
+            -- Guard: only create one new section per course+semester per trigger fire.
+            -- Check whether a section for this course+semester was already created
+            -- AFTER the section that is now full (i.e. section_id > @section_id).
+            -- If one already exists we skip creation; waiters will be enrolled next time
+            -- a drop opens a seat or an admin intervenes.
+            IF NOT EXISTS (
+                SELECT 1
+                FROM Sections
+                WHERE course_id = @course_id
+                  AND semester  = @semester
+                  AND year      = @year
+                  AND section_id > @section_id   -- a newer section created for overflow
+            )
+            BEGIN
+                -- ── Step 1: Create the new section (least-loaded instructor auto-assigned) ──
+                -- sp_CreateDynamicSection uses MAX(section_id)+1 internally, so capture
+                -- the id it will produce BEFORE calling it.
+                SELECT @new_sec_id = ISNULL(MAX(section_id), 0) + 1
+                FROM Sections;
+
+                EXEC sp_CreateDynamicSection
+                    @course_id   = @course_id,
+                    @semester    = @semester,
+                    @year        = @year,
+                    @total_seats = 35;   -- default seat count; adjust as needed
+
+                -- ── Step 2: Enroll every waiter into the new section ──
+                DECLARE student_cur CURSOR LOCAL FAST_FORWARD FOR
+                    SELECT waiting_id, student_id
+                    FROM Waiting_List
+                    WHERE section_id = @section_id
+                    ORDER BY position;   -- respect queue order
+
+                OPEN student_cur;
+                FETCH NEXT FROM student_cur INTO @waiting_id, @student_id;
+
+                WHILE @@FETCH_STATUS = 0
+                BEGIN
+                    SELECT @enroll_id = ISNULL(MAX(enrollment_id), 0) + 1
+                    FROM Enrollments;
+
+                    INSERT INTO Enrollments
+                        (enrollment_id, student_id, section_id, enrollment_date, status)
+                    VALUES
+                        (@enroll_id, @student_id, @new_sec_id, GETDATE(), 'Registered');
+
+                    -- Decrement the new section's available seats
+                    UPDATE Sections
+                    SET available_seats = available_seats - 1
+                    WHERE section_id = @new_sec_id;
+
+                    -- Audit each promotion
+                    INSERT INTO Audit_Log
+                        (action_type, student_id, section_id, details)
+                    VALUES
+                        ('AUTO_SECTION_ENROLL', @student_id, @new_sec_id,
+                         CONCAT('Auto-enrolled from waiting list of section ',
+                                @section_id, ' into new section ', @new_sec_id));
+
+                    DELETE FROM Waiting_List WHERE waiting_id = @waiting_id;
+
+                    FETCH NEXT FROM student_cur INTO @waiting_id, @student_id;
+                END;
+
+                CLOSE student_cur;
+                DEALLOCATE student_cur;
+            END;
+        END;
+
+        FETCH NEXT FROM sec_cur INTO @section_id;
+    END;
+
+    CLOSE sec_cur;
+    DEALLOCATE sec_cur;
+
+
+END;
+GO
+GO
+
+-- Use your actual column names: enrollment_deadline and is_active
+UPDATE Semesters
+SET enrollment_deadline = DATEADD(month, 1, GETDATE())
+WHERE is_active = 1;
 
