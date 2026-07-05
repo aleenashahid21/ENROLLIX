@@ -1,7 +1,6 @@
 # 🎓 ENROLLIX
 ### Smart Enrollment, Simplified
 
-![License](https://img.shields.io/badge/license-MIT-green)
 ![Database](https://img.shields.io/badge/Database-SQL%20Server-blue)
 ![Backend](https://img.shields.io/badge/Backend-Node.js-lightgrey)
 ![Frontend](https://img.shields.io/badge/Frontend-React-orange)
@@ -56,3 +55,19 @@ ENROLLIX is a full‑stack academic enrollment management system designed to rep
 1. Clone the repository:  
    ```bash
    git clone https://github.com/yourusername/enrollix.git
+
+2. Install dependencies:  
+   ```bash
+   npm install
+
+3. Configure database connection in config/db.js
+
+4. Run backedn server
+   ```bash
+   npm start
+
+5. Launch frontend
+   ```bash
+   npm run dev
+
+
